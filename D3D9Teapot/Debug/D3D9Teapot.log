@@ -1,0 +1,19 @@
+﻿Build started 8/30/2011 7:32:05 PM.
+     1>Project "C:\Users\Jeffrey\Documents\Visual Studio 2010\Projects\D3D9Teapot\D3D9Teapot\D3D9Teapot.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\D3D9Teapot.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+       ResourceCompile:
+         All outputs are up-to-date.
+       Link:
+         All outputs are up-to-date.
+         D3D9Teapot.vcxproj -> C:\Users\Jeffrey\Documents\Visual Studio 2010\Projects\D3D9Teapot\Debug\D3D9Teapot.exe
+       FinalizeBuildStatus:
+         Deleting file "Debug\D3D9Teapot.unsuccessfulbuild".
+         Touching "Debug\D3D9Teapot.lastbuildstate".
+     1>Done Building Project "C:\Users\Jeffrey\Documents\Visual Studio 2010\Projects\D3D9Teapot\D3D9Teapot\D3D9Teapot.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.04
