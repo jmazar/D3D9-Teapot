@@ -47,6 +47,7 @@ ID3DXEffect*				g_pEffect9 = NULL;
 float						g_fRot = 0.0f;
 IDirect3DTexture9			*g_pDiffuseTex = NULL;
 IDirect3DTexture9*			g_pNormalTex = NULL;
+IDirect3DTexture9*			g_pGlossTex = NULL;
 UINT						g_wire = 0;   //default is solid, wire is false
 int							g_result = 0; //0: PASS, 1: FAIL
 HWND g_hWnd; //R
@@ -425,9 +426,10 @@ HRESULT CreateTeapot()
 
 		sintheta = sqrtf(1.F-vNorm.y*vNorm.y);
 
-		pData[i].uv.x = theta / (2.0 *D3DX_PI);
-		pData[i].uv.y = phi / D3DX_PI;
-
+		//pData[i].uv.x = theta / (2.0 *D3DX_PI);
+		//pData[i].uv.y = phi / D3DX_PI;
+    		pData[i].uv.y = theta / (2.0 *D3DX_PI);
+		pData[i].uv.x = phi / D3DX_PI / 2.0;
 		/*pData[i].uv.x = (pData[i].uv.x > 0.5)?(1.F-pData[i].uv.x):(pData[i].uv.x);
 		pData[i].uv.y = (pData[i].uv.y > 0.5)?(1.F-pData[i].uv.y):(pData[i].uv.y);*/
 
@@ -527,7 +529,11 @@ BOOL InitDevice(HWND hWnd)
 			result = FALSE; //failure to load texture => crashing app, so quit
 			goto exit;
 		}
-
+    if (FAILED (hr = D3DXCreateTextureFromFile(g_pDevice, L".\\LRB_Tile_Gloss.dds", &g_pGlossTex)) )
+		{
+			result = FALSE; //failure to load texture => crashing app, so quit
+			goto exit;
+		}
 		// Set the viewport
 		RECT rect;
 		GetClientRect(hWnd, &rect);
@@ -592,6 +598,10 @@ void Render()
 		g_result = 1;
 
 	if (FAILED( hr = g_pEffect9->SetTexture( "g_NormalTex", g_pNormalTex ) ) )
+		g_result = 1;
+
+  
+	if (FAILED( hr = g_pEffect9->SetTexture( "g_GlossTex", g_pGlossTex ) ) )
 		g_result = 1;
 
 	//Set the effect Matrices
