@@ -43,7 +43,7 @@ public:
     return m_World;
   }
   
-  void Update();
+  void Update(float elapsedTime);
 private:
   D3DXMATRIXA16 m_World;
 
@@ -68,9 +68,10 @@ public:
     m_pDevice = pDevice;
   }
 
-  int RenderTraversal(SceneGraphNode* pNode);
+  int RenderTraversal(SceneGraphNode* pNode, D3DXMATRIXA16 *pWorld);
 	int Render();
-  void Update();
+  void UpdateTraversal(SceneGraphNode *pNode, float elapsedTime);
+  void Update(float elapsedTime);
   SceneGraphNode* GetRoot(){
     return &m_Root;
   }

@@ -48,6 +48,7 @@ int							g_result = 0; //0: PASS, 1: FAIL
 HWND g_hWnd; //R
 
 
+
   D3DXMATRIXA16 mProj;
 SceneGraph g_SceneGraph;
 
@@ -105,16 +106,30 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
   hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_D3D9EMPTYWINDOW));
 
 
+  g_fRot = 0.5f;
   
-    SceneGraphNode* pNodeA = new SceneGraphNode();
+  SceneGraphNode* pNodeA = new SceneGraphNode();
   pNodeA->SetMesh(&g_pTeapot);
   D3DXMATRIXA16* mTranslate = new D3DXMATRIXA16();
+  D3DXMATRIXA16* mRotate = new D3DXMATRIXA16();
+  D3DXMATRIXA16* mScale = new D3DXMATRIXA16();
+  D3DXMATRIXA16* mWorld = new D3DXMATRIXA16();
   D3DXMatrixIdentity( mTranslate );
-  D3DXMatrixTranslation(mTranslate, 0.0f, 5.0f, 0.0f);
-  pNodeA->SetWorldMatrix(*mTranslate);
+  D3DXMatrixIdentity( mRotate );
+  D3DXMatrixIdentity( mWorld );
+  D3DXMatrixIdentity( mScale );
+  D3DXMatrixRotationYawPitchRoll( mRotate, 0.0f, 0.0f, 5.0f );
+  D3DXMatrixTranslation(mTranslate, 0.0f, 2.0f, 0.0f);
+  D3DXMatrixScaling(mScale, 0.5, 0.5, 0.5);
+  *mWorld =*mScale * *mTranslate * *mRotate ;
+  pNodeA->SetWorldMatrix(*mWorld);
+  g_SceneGraph.GetRoot()->SetWorldMatrix(*mRotate);
 
+    SceneGraphNode* pNodeB = new SceneGraphNode();
+  pNodeB->SetMesh(&g_pTeapot);
+  pNodeB->SetWorldMatrix(*mWorld);
 
-
+  pNodeA->AddChildNode(pNodeB);
   g_SceneGraph.GetRoot()->AddChildNode(pNodeA);
   g_SceneGraph.GetRoot()->SetMesh(&g_pTeapot);
 
@@ -236,6 +251,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
   TCHAR pText[1024];
 
+  __int64 cntsPerSec = 0;
+  QueryPerformanceFrequency((LARGE_INTEGER*)&cntsPerSec);
+
+  float secsPerCnt = 1.0f / (float) cntsPerSec;
+
+  __int64 prevTimeStamp = 0;
+  QueryPerformanceCounter((LARGE_INTEGER*)&prevTimeStamp);
+
   switch (message)
   {
   case WM_COMMAND:
@@ -336,10 +359,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(g_result);
       }
 #else
+
+      __int64 currTimeStamp = 0;
+      QueryPerformanceCounter((LARGE_INTEGER*)&currTimeStamp);
+
+      float dt = (currTimeStamp - prevTimeStamp) * secsPerCnt;
+      g_SceneGraph.Update(dt);
       Render();
       // Blt to the screen
       g_pDevice->Present( NULL, NULL, 0, NULL);
 
+      prevTimeStamp = currTimeStamp;
 #endif
     }
     else

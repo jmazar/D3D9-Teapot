@@ -13,8 +13,14 @@ SceneGraphNode::~SceneGraphNode()
 {
 }
 
-void SceneGraphNode::Update()
+void SceneGraphNode::Update(float elapsedTime)
 {
+  //elapsedTime *= 1000.0f;
+  D3DXMATRIXA16 mRotate;
+  D3DXMatrixIdentity( &mRotate );
+  D3DXMatrixRotationYawPitchRoll( &mRotate, 0.0f, 0.0f, 0.05f );
+
+  m_World =  m_World * mRotate ;
 }
 
 //SceneGraph
@@ -24,7 +30,7 @@ SceneGraph::SceneGraph()
   m_pDevice(NULL)
 {
   m_Root.SetParent(NULL);
-  m_VecEye = D3DXVECTOR3(0.0f, 0.0f, 20.0f);
+  m_VecEye = D3DXVECTOR3(2.0f, 2.0f, 10.0f);
 
   D3DXVECTOR3 vecAt (0.0f, 0.0f, 0.0f);
   D3DXVECTOR3 vecUp (0.0f, 1.0f, 0.0f);
@@ -51,11 +57,12 @@ int SceneGraph::Render()
   //Load/Set appropriate textures and techniques
   if (FAILED( hr = m_pEffect->SetTechnique( "RenderScene_GeometrynLightsOnly" ) ) ) 
     result = 1;
-
+  D3DXMATRIXA16 identity;
+  D3DXMatrixIdentity(&identity);
   if( SUCCEEDED( m_pDevice->BeginScene() ) )
   {
 
-    result = RenderTraversal(&m_Root);
+    result = RenderTraversal(&m_Root, &identity);
 
     if (FAILED( hr = m_pDevice->EndScene() ) ) 
       result = 1;
@@ -66,18 +73,13 @@ int SceneGraph::Render()
   return result | hr;
 }
 
-int SceneGraph::RenderTraversal(SceneGraphNode *pNode)
+int SceneGraph::RenderTraversal(SceneGraphNode *pNode, D3DXMATRIXA16 *pWorld)
 {
 
   int result = 0;
   int hr = 0;
-  std::vector<SceneGraphNode*> children = pNode->GetChildren();
-  for(std::vector<SceneGraphNode*>::iterator iterator = children.begin();
-    iterator != children.end();
-    iterator++)
-  {
-    RenderTraversal(*iterator);
-  }
+
+  D3DXMATRIXA16 world = *pWorld * pNode->GetWorldMatrix();
 
   if(NULL !=  pNode->GetMesh())
   {
@@ -85,16 +87,7 @@ int SceneGraph::RenderTraversal(SceneGraphNode *pNode)
     D3DXMATRIXA16 worldInverse;
     D3DXMATRIXA16 worldView;
     D3DXMATRIXA16 worldViewProjection;
-    D3DXMATRIXA16 world = pNode->GetWorldMatrix();
-    SceneGraphNode* parent = pNode->GetParent();
-    while(NULL != parent)
-    {
-      world = world * parent->GetWorldMatrix();
 
-      parent = parent->GetParent();
-
-
-    }
     //Set the effect Matrices
     if (FAILED( hr = m_pEffect->SetMatrix( "g_mWorld", &world ) ) )
       result = 1;
@@ -116,9 +109,6 @@ int SceneGraph::RenderTraversal(SceneGraphNode *pNode)
 
     if (FAILED( m_pEffect->SetVector( "g_vEyePos", &(D3DXVECTOR4(m_VecEye, 1))) ) )
       result = 1;
-        
- 
-
 
     UINT passes;
     if (FAILED( hr = m_pEffect->Begin(&passes, 0) ) ) 
@@ -135,16 +125,37 @@ int SceneGraph::RenderTraversal(SceneGraphNode *pNode)
     if (FAILED( hr = m_pEffect->End() ) ) 
       result = 1;
 
-
-
   }
+
+  std::vector<SceneGraphNode*> children = pNode->GetChildren();
+  for(std::vector<SceneGraphNode*>::iterator iterator = children.begin();
+    iterator != children.end();
+    iterator++)
+  {
+    RenderTraversal(*iterator, &world);
+  }
+
+
 
 
   return result | hr;
 
 }
 
-void SceneGraph::Update()
+void SceneGraph::Update(float elapsedTime)
 {
+  UpdateTraversal(&m_Root, elapsedTime);
+}
+void SceneGraph::UpdateTraversal(SceneGraphNode *pNode, float elapsedTime)
+{
+  pNode->Update(elapsedTime);
+  std::vector<SceneGraphNode*> children = pNode->GetChildren();
+  for(std::vector<SceneGraphNode*>::iterator iterator = children.begin();
+    iterator != children.end();
+    iterator++)
+  {
+    UpdateTraversal(*iterator, elapsedTime);
+  }
+
 }
 
