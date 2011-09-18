@@ -39,3 +39,10 @@
 // This grabs all required D3D headers
 #include <d3dx9.h>
 #include <d3d9.h>
+
+#ifndef D3DRGBA
+#define D3DRGBA(r, g, b, a) \
+	(   (((long)((a) * 255)) << 24) | (((long)((r) * 255)) << 16) \
+	|   (((long)((g) * 255)) << 8) | (long)((b) * 255) \
+	)
+#endif 
