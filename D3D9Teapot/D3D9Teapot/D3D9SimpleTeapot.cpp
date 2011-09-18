@@ -633,23 +633,8 @@ void Render()
 
 
 
-  D3DCOLOR color = D3DRGBA(0.0f, 0.0f, 0.0f, 1.0f);
-  // Clear the back buffer
-  if (FAILED( hr = g_pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER , color, 1.0f, 0) ) )
-    g_result = 1;
 
-  //Load/Set appropriate textures and techniques
-  if (FAILED( hr = g_pEffect9->SetTechnique( "RenderScene_GeometrynLightsOnly" ) ) ) 
-    g_result = 1;
-
-  if( SUCCEEDED( g_pDevice->BeginScene() ) )
-  {
-    g_result = g_SceneGraph.Render(g_SceneGraph.GetRoot());
-    if (FAILED( hr = g_pDevice->EndScene() ) ) 
-      g_result = 1;
-  }
-  else 
-    g_result = 1;
+	g_SceneGraph.Render();
 
 #endif
 #ifdef old

@@ -39,7 +39,34 @@ SceneGraph::~SceneGraph()
 {
 }
 
-int SceneGraph::Render(SceneGraphNode *pNode)
+int SceneGraph::Render()
+{
+  int result = 0;
+  int hr = 0;
+  D3DCOLOR color = D3DRGBA(0.0f, 0.0f, 0.0f, 1.0f);
+  // Clear the back buffer
+  if (FAILED( hr = m_pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER , color, 1.0f, 0) ) )
+    result = 1;
+
+  //Load/Set appropriate textures and techniques
+  if (FAILED( hr = m_pEffect->SetTechnique( "RenderScene_GeometrynLightsOnly" ) ) ) 
+    result = 1;
+
+  if( SUCCEEDED( m_pDevice->BeginScene() ) )
+  {
+
+    result = RenderTraversal(&m_Root);
+
+    if (FAILED( hr = m_pDevice->EndScene() ) ) 
+      result = 1;
+  }
+  else 
+    result = 1;
+
+  return result | hr;
+}
+
+int SceneGraph::RenderTraversal(SceneGraphNode *pNode)
 {
 
   int result = 0;
@@ -49,7 +76,7 @@ int SceneGraph::Render(SceneGraphNode *pNode)
     iterator != children.end();
     iterator++)
   {
-    Render(*iterator);
+    RenderTraversal(*iterator);
   }
 
   if(NULL !=  pNode->GetMesh())
