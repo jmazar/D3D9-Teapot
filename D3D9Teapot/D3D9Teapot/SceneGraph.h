@@ -68,7 +68,8 @@ public:
     m_pDevice = pDevice;
   }
 
-  int Render(SceneGraphNode* pNode);
+  int RenderTraversal(SceneGraphNode* pNode);
+	int Render();
   void Update();
   SceneGraphNode* GetRoot(){
     return &m_Root;
