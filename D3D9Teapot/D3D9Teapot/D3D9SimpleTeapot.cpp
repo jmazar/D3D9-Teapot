@@ -108,8 +108,16 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
   g_fRot = 0.5f;
   
-  SceneGraphNode* pNodeA = new SceneGraphNode();
-  pNodeA->SetMesh(&g_pTeapot);
+  TransformNode* pNodeT1 = new TransformNode();
+  TransformNode* pNodeT2 = new TransformNode();
+  TransformNode* pNodeT3 = new TransformNode();
+  GeometryNode* pNodeG1 = new GeometryNode();
+  GeometryNode* pNodeG2 = new GeometryNode();
+  GeometryNode* pNodeG3 = new GeometryNode();
+  pNodeG1->SetMesh(&g_pTeapot);
+  pNodeG2->SetMesh(&g_pTeapot);
+  pNodeG3->SetMesh(&g_pTeapot);
+
   D3DXMATRIXA16* mTranslate = new D3DXMATRIXA16();
   D3DXMATRIXA16* mRotate = new D3DXMATRIXA16();
   D3DXMATRIXA16* mScale = new D3DXMATRIXA16();
@@ -122,16 +130,18 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
   D3DXMatrixTranslation(mTranslate, 0.0f, 2.0f, 0.0f);
   D3DXMatrixScaling(mScale, 0.5, 0.5, 0.5);
   *mWorld =*mScale * *mTranslate * *mRotate ;
-  pNodeA->SetWorldMatrix(*mWorld);
-  g_SceneGraph.GetRoot()->SetWorldMatrix(*mRotate);
 
-    SceneGraphNode* pNodeB = new SceneGraphNode();
-  pNodeB->SetMesh(&g_pTeapot);
-  pNodeB->SetWorldMatrix(*mWorld);
 
-  pNodeA->AddChildNode(pNodeB);
-  g_SceneGraph.GetRoot()->AddChildNode(pNodeA);
-  g_SceneGraph.GetRoot()->SetMesh(&g_pTeapot);
+  pNodeT1->SetTransformMatrix(*mRotate);
+  pNodeT2->SetTransformMatrix(*mWorld);
+  pNodeT3->SetTransformMatrix(*mWorld);
+
+  pNodeT1->AddChildNode(pNodeG1);
+  pNodeG1->AddChildNode(pNodeT2);
+  pNodeT2->AddChildNode(pNodeG2);
+  pNodeG2->AddChildNode(pNodeT3);
+  pNodeT3->AddChildNode(pNodeG3);
+  g_SceneGraph.GetRoot()->AddChildNode(pNodeT1);
 
 
   // Force Init

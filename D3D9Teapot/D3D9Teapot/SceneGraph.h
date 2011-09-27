@@ -4,29 +4,24 @@
 #include "stdafx.h"
 #include <vector>
 
+typedef struct SceneGraphNodeData
+{
+  D3DXMATRIXA16     transform;
+  ID3DXEffect*      pEffect;
+  IDirect3DDevice9*  pDevice;
+  D3DXVECTOR3       vecEye;
+  D3DXMATRIXA16     view;
+	D3DXMATRIXA16     projection;
+} SceneGraphNodeData;
+
 class SceneGraphNode
 {
 public:
   SceneGraphNode();
   ~SceneGraphNode();
 
-  void SetMesh(ID3DXMesh** const mesh) {
-    m_hMesh = mesh;
-  }
-   ID3DXMesh*  GetMesh() const{
-    return *m_hMesh;
-  }
 
-  void SetParent(SceneGraphNode* parent)
-  {
-    m_pParent = parent;
-  }
-
-  SceneGraphNode* GetParent() const {
-    return m_pParent;
-  }
   void AddChildNode(SceneGraphNode* child){
-    child->SetParent(this);
     m_Children.push_back(child);
   }
 
@@ -35,23 +30,58 @@ public:
     return m_Children;
   }
 
-  void SetWorldMatrix(const D3DXMATRIXA16 &world) {
-    m_World = world;
-  }
-
-  D3DXMATRIXA16 GetWorldMatrix() const {
-    return m_World;
-  }
-  
-  void Update(float elapsedTime);
+  virtual void Update(float elapsedTime) = 0;
+  virtual void Action(SceneGraphNodeData* pData) = 0;
 private:
-  D3DXMATRIXA16 m_World;
-
-  ID3DXMesh **m_hMesh;
-
-  SceneGraphNode* m_pParent;
+ 
   std::vector<SceneGraphNode*> m_Children;
 };
+
+class TransformNode : public SceneGraphNode
+{
+public:
+  TransformNode();
+  ~TransformNode();
+  void SetTransformMatrix(const D3DXMATRIXA16 &transform) {
+    m_Transform = transform;
+  }
+
+  D3DXMATRIXA16 GetTransformMatrix() const {
+    return m_Transform;
+  }
+
+  void Update(float elapsedTime);
+  void Action(SceneGraphNodeData* pData);
+private:
+  D3DXMATRIXA16 m_Transform;
+};
+
+class RootNode : public SceneGraphNode
+{
+public:
+  RootNode();
+  ~RootNode();
+  void Update(float elapsedTime);
+  void Action(SceneGraphNodeData* pData);
+};
+
+class GeometryNode : public SceneGraphNode
+{
+public:
+  GeometryNode();
+  ~GeometryNode();
+  void SetMesh(ID3DXMesh** const mesh) {
+    m_hMesh = mesh;
+  }
+   ID3DXMesh*  GetMesh() const{
+    return *m_hMesh;
+  }
+  void Update(float elapsedTime);
+  void Action(SceneGraphNodeData* pData);
+private:
+  ID3DXMesh **m_hMesh;
+};
+
 
 class SceneGraph
 {
@@ -68,17 +98,19 @@ public:
     m_pDevice = pDevice;
   }
 
-  int RenderTraversal(SceneGraphNode* pNode, D3DXMATRIXA16 *pWorld);
+
 	int Render();
-  void UpdateTraversal(SceneGraphNode *pNode, float elapsedTime);
+
   void Update(float elapsedTime);
-  SceneGraphNode* GetRoot(){
+  RootNode* GetRoot(){
     return &m_Root;
   }
 private:
+  int RenderTraversal(SceneGraphNode* pNode, D3DXMATRIXA16 *pWorld);
+  void UpdateTraversal(SceneGraphNode *pNode, float elapsedTime);
   ID3DXEffect* m_pEffect;
   IDirect3DDevice9			*m_pDevice;
-  SceneGraphNode m_Root;
+  RootNode m_Root;
   D3DXVECTOR3 m_VecEye;
   D3DXMATRIXA16 m_View;
 	D3DXMATRIXA16 m_Projection;
